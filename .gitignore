@@ -1,0 +1,8 @@
+names.csv
+secrets.csv
+node_modules/
+src/
+.vscode
+package-lock.json
+package.json
+# Ignore names.csv file
