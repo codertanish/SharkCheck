@@ -2,37 +2,52 @@ const idDigits = 8 // Number of digits present in ID.
 let reference = [];
 let scriptURL = "";
 
-fetch('/names.csv')
-  .then(response => response.text())
-  .then(csvText => {
-    Papa.parse(csvText, {
-      header: true,
-      skipEmptyLines: true,
-      complete: function(results) {
-          reference = results.data.map(row => ({
-          name: `${row['First']} ${row['Last']}`,
-          ID: parseInt(row['ID']),
-          status: row['Status'].trim().toLowerCase()
-        }));
+fetch('/config')
+  .then(res => res.json())
+  .then(data => {
+    scriptURL = data.scriptURL;
+  });
 
-        // For testing purposes: console.log("Reference:", reference);
-        // To access a student name based on ID: console.log("Student: " + reference.find(Object => Object.ID === 12345678)['name']);
-    
+  function toggleUpload() {
+    const modal = document.getElementById("popupModal");
+    modal.classList.toggle("hidden");
+  }
+
+  function submitUpload() {
+    const password = document.getElementById("passwordInput").value;
+    const file = document.getElementById("fileInput").files[0];
+
+    if (!password || !file) {
+      alert("Please enter a password and select a file.");
+      return;
     }
-    });
-  });
-  
-fetch('/secrets.csv')
-  .then(response => response.text())
-  .then(csv => {
-    const lines = csv.trim().split('\n');
-    scriptURL = lines[1]; // First line is header; second is your secret URL
-    
-  })
-  .catch(error => {
-    console.error('Failed to load script:', error);
-  });
 
+
+    console.log("Password:", password);
+    console.log("File name:", file.name);
+
+    toggleModal(); // Close modal after submission
+  }
+
+// fetch('/names.csv')
+//   .then(response => response.text())
+//   .then(csvText => {
+//     Papa.parse(csvText, {
+//       header: true,
+//       skipEmptyLines: true,
+//       complete: function(results) {
+//           reference = results.data.map(row => ({
+//           name: `${row['First']} ${row['Last']}`,
+//           ID: parseInt(row['ID']),
+//           status: row['Status'].trim().toLowerCase()
+//         }));
+
+//         // For testing purposes: console.log("Reference:", reference);
+//         // To access a student name based on ID: console.log("Student: " + reference.find(Object => Object.ID === 12345678)['name']);
+    
+//     }
+//     });
+//   });
 
 function saveData(student) {
   const data = new FormData();
@@ -43,9 +58,6 @@ function saveData(student) {
     method: 'POST',
     body: data
   })
-//   .then(response => {
-//     alert("Thank you! Form is submitted");
-//   })
   .catch(error => console.error('Error!', error.message));
 }
 
