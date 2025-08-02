@@ -1,12 +1,21 @@
 const idDigits = 8 // Number of digits present in ID.
 let reference = [];
 let scriptURL = "";
+let password = "";
+let csvFile;
 
-fetch('/config')
+  fetch('/config')
   .then(res => res.json())
   .then(data => {
     scriptURL = data.scriptURL;
   });
+
+  fetch('/config')
+  .then(res => res.json())
+  .then(data => {
+    password = data.password;
+  });
+  console.log(scriptURL);
 
   function toggleUpload() {
     const modal = document.getElementById("popupModal");
@@ -14,19 +23,40 @@ fetch('/config')
   }
 
   function submitUpload() {
-    const password = document.getElementById("passwordInput").value;
-    const file = document.getElementById("fileInput").files[0];
+    csvFile = document.getElementById("fileInput").files[0];
+    input = document.getElementById("passwordInput").value;
+    console.log(input)
+    console.log(password)
 
-    if (!password || !file) {
-      alert("Please enter a password and select a file.");
+    if (input!=password || !csvFile) {
+      alert("Incorrect Password/File not Selected. Please retry.");
       return;
     }
 
+    if(input==password && csvFile) {
+          Papa.parse(csvFile, {
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+       reference = results.data.map(row => ({
+        name: `${row['First']} ${row['Last']}`,
+        ID: parseInt(row['ID']),
+        status: row['Status'].trim().toLowerCase()
+      }));
 
-    console.log("Password:", password);
-    console.log("File name:", file.name);
+      alert("CSV Successfully Saved!");
 
-    toggleModal(); // Close modal after submission
+      // 🔍 For testing:
+      console.log("Reference:", reference);
+      // Example: Find student by ID
+      // console.log("Student:", reference.find(obj => obj.ID === 12345678)?.name);
+    }
+  });
+        alert("CSV Sucessfully Saved and Parsed!");
+    }
+
+    toggleUpload();
+
   }
 
 // fetch('/names.csv')
