@@ -8,25 +8,21 @@ let csvFile;
   .then(res => res.json())
   .then(data => {
     scriptURL = data.scriptURL;
-  });
-
-  fetch('/config')
-  .then(res => res.json())
-  .then(data => {
     password = data.password;
   });
-  console.log(scriptURL);
+
 
   function toggleUpload() {
     const modal = document.getElementById("popupModal");
     modal.classList.toggle("hidden");
+    document.getElementById("passwordInput").value = "";
+    document.getElementById("fileInput").value = "";
+    document.getElementById("fileName").innerHTML = "";
   }
 
   function submitUpload() {
     csvFile = document.getElementById("fileInput").files[0];
     input = document.getElementById("passwordInput").value;
-    console.log(input)
-    console.log(password)
 
     if (input!=password || !csvFile) {
       alert("Incorrect Password/File not Selected. Please retry.");
@@ -44,12 +40,6 @@ let csvFile;
         status: row['Status'].trim().toLowerCase()
       }));
 
-      alert("CSV Successfully Saved!");
-
-      // 🔍 For testing:
-      console.log("Reference:", reference);
-      // Example: Find student by ID
-      // console.log("Student:", reference.find(obj => obj.ID === 12345678)?.name);
     }
   });
         alert("CSV Sucessfully Saved and Parsed!");
@@ -59,31 +49,12 @@ let csvFile;
 
   }
 
-// fetch('/names.csv')
-//   .then(response => response.text())
-//   .then(csvText => {
-//     Papa.parse(csvText, {
-//       header: true,
-//       skipEmptyLines: true,
-//       complete: function(results) {
-//           reference = results.data.map(row => ({
-//           name: `${row['First']} ${row['Last']}`,
-//           ID: parseInt(row['ID']),
-//           status: row['Status'].trim().toLowerCase()
-//         }));
-
-//         // For testing purposes: console.log("Reference:", reference);
-//         // To access a student name based on ID: console.log("Student: " + reference.find(Object => Object.ID === 12345678)['name']);
-    
-//     }
-//     });
-//   });
-
 function saveData(student) {
   const data = new FormData();
   data.append('Name', student["name"]);
   data.append('Status', student["status"]);
   data.append('ID', student["ID"]);
+  data.append('action', 'submit')
   fetch(scriptURL, {
     method: 'POST',
     body: data
@@ -91,8 +62,35 @@ function saveData(student) {
   .catch(error => console.error('Error!', error.message));
 }
 
-// executed every time the input box changes
-function idEnter(){
+function resetData() {
+  const data = new FormData();
+  data.append('action', 'reset')
+  fetch(scriptURL, {
+  method: 'POST',
+  body: data
+})
+.then(res => res.json())
+.then(data => console.log(data))
+.catch(err => console.error('Error:', err));
+}
+
+  function confirmReset() {
+    if(document.getElementById("resetPassword").value !== password) {
+      document.getElementById("passwordError").innerHTML = "Incorrect password.";
+      document.getElementById("passwordError").classList.remove("hidden");
+      document.getElementById("resetPassword").value = "";
+      return;
+    }
+    else {
+      resetData();
+      document.getElementById("passwordError").classList.remove("hidden")
+      document.getElementById("passwordError").innerHTML = "Data reset successfully; you may now close this window.";
+      document.getElementById("resetPassword").value = "";
+    }
+
+  }
+
+  function idEnter(){
     const idEntered = document.getElementById("idnum").value;
     const student = reference.find(obj => obj.ID == parseInt(idEntered));
     if(idEntered.length == 8 && student) {
